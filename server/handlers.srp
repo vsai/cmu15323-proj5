@@ -4,7 +4,7 @@
 #
 # handlers.srp
 #
-# The OSC handlers for Project 3
+# The OSC handlers for Project 5
 ###################################################
 load "scheduler"
 
@@ -65,12 +65,13 @@ INSTRUMENT_SET = [42, 38, 47, 49, 51, 36]
 
 #--Handlers
 def toggle_1_handler(path, on)
-    display "toggle_1_handler reached!", path, on
+    display "entered toggle_1_handler", path, on
     var path_array = parseOSCaddress(path)
     var toggle_no = parseNum(path_array[len(path_array) - 1])
 
     if toggle_no == 1
-        togglePlay(MULTITOGGLE_BOARD, INSTRUMENT_SET)
+        display "toggle 1 pressed!!", toggle_no
+        togglePlay()
     
     elif toggle_no == 2
         display "toggle 2 pressed!!", toggle_no
@@ -85,18 +86,17 @@ def fader_1_handler(path, fader_val)
     var fader_no = parseNum(path_array[len(path_array) - 1])
 
     if fader_no == 1
-        var tempo = mapTempo(fader_val)
-        changeTempo(tempo)
+        display "fader 1 pressed!"
 
     elif fader_no == 2
-        print "fader2 pressed!"
+        print "fader 2 pressed!"
     else
         display "SYSTEM ERROR: INVALID FADER NUMBER FOR TAB 1"
 
 
 
 def push_1_handler(path, on)
-    display "push_handler reached", path, on
+    display "entered push_handler", path, on
     var path_array = parseOSCaddress(path)
     var push_no = int(parseNum(path_array[len(path_array) - 1]))
 
@@ -137,26 +137,11 @@ MULTIFADER_BOARD = make1DArray(MULTIFADER_MAX)
 
 #--Handlers
 def multitoggle_2_handler(path, on)
-    var path_array = parseOSCaddress(path)
-    var path_array_len = len(path_array)
-
-    # Get r and c, move from 1-idx to 0-idx and map to origin on bottom-left as in GUI
-    var r = MULTITOGGLE_MAX_ROW - int(path_array[path_array_len - 2])
-    var c = int(path_array[path_array_len - 1]) - 1
-    MULTITOGGLE_BOARD[r][c] = on 
-
-    display "SYSTEM: MULTITOGGLE_BOARD updated"
-    print MULTITOGGLE_BOARD
+    display "entered multitoggle_2_handler", path, on
     return
 
 def multifader_2_handler(path, vel)
-    var path_array = parseOSCaddress(path)
-    var path_array_len = len(path_array)
-    var loc = int(path_array[path_array_len - 1]) - 1
-
-    MULTIFADER_BOARD[loc] = mapVel(vel)
-    display "SYSTEM: MULTIFADER_BOARD updated"
-    print MULTIFADER_BOARD
+    display "entered multifader_2_handler", path, vel
     return
 
 
@@ -185,11 +170,7 @@ TOGGLE_BOARD_3 = make1DArray(TOGGLES_3_ALL)
 
 #--Handlers
 def rotary_3_handler(path, rotary_value)
-    var path_array = parseOSCaddress(path)
-    var rotary_no = parseNum(path_array[len(path_array) - 1])
-
-    if rotary_no == 2
-        modGain(mapGain(rotary_value))
+    display "entered rotary_3_handler", path, rotary_value
 
 def toggle_3_handler(path, rest parameters)
     display "entered toggle_3_handler", path, parameters
@@ -216,15 +197,17 @@ TOGGLE_BOARD_4 = make1DArray(TOGGLES_4_ALL)
 
 #--Handlers
 def xy_4_handler(path, rest parameters)
-    display "xy board", path, parameters
+    display "entered xy board", path, parameters
 
 def toggle_4_handler(path, rest parameters)
-    display "hit toggle board 4", path, parameters
+    display "entered toggle_4_handler", path, parameters
 
 #--Setup
 def setup_4_xy()
-    osc_server_method("/4/xy", "ff", nil, 'xy_4_handler')    
+    osc_server_method("/4/xy", "ff", nil, 'xy_4_handler')  
+    display "SYSTEM: Tab 4 XYBoard has been initialized."  
 
 def setup_4_toggles()
     for i = 0 to TOGGLES_4_ALL
         osc_server_method(cat(["/4/toggle",str(i+1)]), "f", nil, 'toggle_4_handler')
+    display "SYSTEM: Tab 4 Toggles have been initialized."

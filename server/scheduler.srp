@@ -2,7 +2,7 @@
 # 15-323 Spring 14
 # Rishabh Alaap Singh (rasingh)
 #
-# midiControl.srp
+# scheduler.srp
 #
 # Functions that control MIDI. This file maintains
 # all the scheduler code and plays all sounds. 
@@ -14,58 +14,45 @@ require "midi-io"
 
 PLAY = 0
 wait_period = 0.5 # Default starting
-MULTIBOARD_MAX_COL = 16 # Note there is another macro with the same name; 
-# this exists here because of the dependency issues, so if changing this value
-# change it in handlers.srp as well.
 
-GAIN = 0 # Records offset from velocity array and is changed by the gain controller
-# on tab 3
 
-def activity(sequence, id, p)
-    display "activity", id, the_sched.time, time_get(), p, p % MULTIBOARD_MAX_COL
+NOTE_ARRAY = [60,61,62,63,64,65]
 
-    s = sequence
-    c = (p % MULTIBOARD_MAX_COL)
+def activity(play, p)
+    display "activity", play, the_sched.time, time_get(), p
+        
+    var buf_len = len(NOTE_ARRAY)
+    var i = p % buf_len
 
-    print INSTRUMENT_SET
-    print s
 
-    # Stop the sounds from the prev iteration
-    play_sounds(s, p % MULTIBOARD_MAX_COL, 0)
+    play_sounds(i, 0)
 
-    # stop AFTER note_off
-    if id != PLAY 
-       return
+    if play != PLAY
+        return
 
-    # Play the sounds for this iteration of activity
-    play_sounds(s, c, 1)
-
-    # Increment p and analyse the new value to change the rudiment if 
-    # necessary
+    display "--"
     p = p + 1
+    play_sounds(i, 1)
     
-    # After increment, if p mod 4 = 0 then that means we're done with 
-    # this rudiment
-    the_sched.cause(1, nil, 'activity', sequence, id, p)
+
+    the_sched.cause(wait_period, nil, 'activity', play, p)
 
 
 # Physically plays the sounds using midi-io
-def play_sounds(s, c, on)
-    rows = len(s)
-    instruments = len(INSTRUMENT_SET)
+def play_sounds(i, on)
+    display "play_sounds", on
 
-    if rows != instruments
-        print "\n\nSYSTEM ERROR: THERE ARE NOT AS MANY INSTRUMENTS AS ROWS\n\n"
-        return
+    if on == 1
+        midi_out.note_on(0x90, NOTE_ARRAY[i], 100)
+    else
+        # end the previous note
+        if i == 0
+            i = len(NOTE_ARRAY) - 1
+        else
+            i = i-1
+        midi_out.note_on(0x90, NOTE_ARRAY[i], 0)
 
-    # Iterate through the rows of the 2D array 's' for the col 'c' specified
-    # and play all notes that are a '1'
-    for r = 0 to rows:
-        if s[r][c] == 1:
-            if on == 1:
-                midi_out.note_on(0x99,INSTRUMENT_SET[r],velCap(MULTIFADER_BOARD[c] + GAIN)) 
-            else:
-                midi_out.note_on(0x99, INSTRUMENT_SET[r], 0)
+
 
 # Changes the waiting period of the drums
 def changeTempo(tempo)
@@ -74,38 +61,26 @@ def changeTempo(tempo)
     vtsched.finish_use()
     display "SYSTEM: Tempo Changed to ", tempo
 
-def togglePlay(board, instruments)
+def togglePlay()
     if PLAY == 0
         PLAY = 1
         print "===============PLAYING==============="
-        start_drums(wait_period)
+        start_playing(wait_period)
     else
         PLAY = 0
         print "===============STOPPED==============="
 
-# Change all the instruments by changing their channel by this much
-def modInstuments(delta,up)
-    var instr_len = len(INSTRUMENT_SET)
-    if up == 1
-        for i = 0 to instr_len
-            INSTRUMENT_SET[i] = INSTRUMENT_SET[i] + delta
-    else
-        for i = 0 to instr_len
-            INSTRUMENT_SET[i] = INSTRUMENT_SET[i] - delta
-    display "SYSTEM: Instruments Modded, changed by", delta
-    print INSTRUMENT_SET
 
 def modGain(delta)
     GAIN = delta
-
 
 def timer_callback()
     rtsched.poll(time_get())
     osc_server_poll()
 
-def start_drums(wait_period)
+def start_playing(wait_period)
     vtsched.start_use()
-    vtsched.cause(1,nil,'activity', MULTITOGGLE_BOARD, PLAY, 0)
+    vtsched.cause(wait_period,nil,'activity', PLAY, 0)
     the_sched.finish_use()
 
 def setup_scheduler()

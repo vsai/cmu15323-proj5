@@ -4,7 +4,7 @@
 #
 # helpers.srp
 #
-# Some useful helper functions for Project 3
+# Some useful helper functions for Project 5
 ###################################################
 
 load "strparse"
@@ -37,7 +37,6 @@ def parseOSCaddress(input)
 # REQUIRES : an alphanumeric string of alphabets and then numbers
 # ENSURES  : number is returned
 def parseNum(path)
-    display ">>>>>>parseNum", path
     var sp = String_parse(path)
     var al = sp.get_alpha()
     var n = sp.get_integer()
