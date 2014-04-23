@@ -34,6 +34,8 @@ while len(data) == chunk*swidth:
     # unpack the data and times by the hamming window
     indata = np.array(wave.struct.unpack("%dh"%(len(data)/swidth),\
                                         data))*window
+    print "len(indata) = {0}".format(len(indata))
+    print "indata: {0}".format(indata)
     # Take the fft and square each value
     fftData=abs(np.fft.rfft(indata))**2
     # find the maximum

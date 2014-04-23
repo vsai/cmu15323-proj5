@@ -1,6 +1,6 @@
 def startup()
   display "got into startup"
-  addr = osc_create_address("128.237.176.129", "7770", t)
+  addr = osc_create_address("128.237.202.69", "7770", t)
 
 def send_afloat()
   display "sending a float.."
