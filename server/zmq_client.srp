@@ -1,0 +1,14 @@
+def main()
+  zmq_init()
+  var socket = zmq_open_request()
+  display "connect step", zmq_connect(socket, "tcp", "localhost", 5555)
+
+  for i = 0 to 10
+    zmq_send(socket, "Hello")
+    var result = zmq_recv_block(socket)
+    print "Client: Hello ->", result
+
+  #zmq_close(socket)
+  #zmq_term()
+
+main()
