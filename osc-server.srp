@@ -1,0 +1,27 @@
+require "debug"
+debug_stack_print = t
+require "sched"
+require "midi-io"
+
+wait_period = 0.5
+
+def activity(p)
+  display "activity", p, the_sched.time, time_get()
+  midi_out.note_on(0, 60 + p % 12, 0)
+  p = p + 1
+  midi_out.note_on(0, 60 + p % 12, 100)
+  the_sched.cause(0.2, nil, 'activity', p)
+
+def timer_callback()
+  rtsched.poll(time_get())
+  osc_server_poll()
+
+def server_init()
+  sched_init()
+  midi_out.start(0)
+  rtsched.time_offset = time_get()
+  vtsched.set_period(wait_period) 
+  #vtsched.cause(1,nil,'activity',0)
+  wxs_timer_start(2,'timer_callback')
+
+server_init()
