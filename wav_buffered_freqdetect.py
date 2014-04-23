@@ -1,3 +1,5 @@
+#THANKS: http://stackoverflow.com/questions/2648151/python-frequency-detection
+
 # Read in a WAV and find the freq's
 import pyaudio
 import wave

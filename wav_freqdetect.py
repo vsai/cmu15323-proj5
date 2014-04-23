@@ -1,3 +1,4 @@
+#THANKS: http://stackoverflow.com/questions/3694918/how-to-extract-frequency-associated-with-fft-values-in-python
 import wave
 import struct
 import numpy as np
