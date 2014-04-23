@@ -9,13 +9,15 @@ import time
 import struct
 import bucketing_test as bt
 
-#chunk = 2048
 WIDTH = 2
 CHANNELS = 1
 RATE = 44100
 
 # open stream
 p = pyaudio.PyAudio()
+
+#def getTapped(indata, frame_count):
+
 
 def getMainFreq(indata, frame_count):
     # Take the fft and square each value
@@ -39,7 +41,7 @@ def callback(in_data, frame_count, time_info, status):
     # unpack the data and times by the hamming window
     indata = np.array(wave.struct.unpack('{n}h'.format(n=frame_count), in_data))*window
     freq = getMainFreq(indata, frame_count)
-    note = bt.getMusic(freq, "note")
+    note = bt.getNote(freq)
     print note
     return (in_data, pyaudio.paContinue)
 
@@ -48,7 +50,7 @@ stream = p.open(format=p.get_format_from_width(WIDTH),
                 rate=RATE,
                 input=True,
                 output=True,
-                frames_per_buffer=4096,
+                frames_per_buffer=1024,
                 stream_callback=callback)
 
 #start the stream

@@ -106,18 +106,18 @@ note_to_freq = dict((v,k) for k, v in freq_to_note.iteritems())
 midi_to_freq = dict((v,k) for k,v in freq_to_midi.iteritems())
 
 
-def getNote(freq):
+def getMusic(freq, type="note"):
+    d = freq_to_note
+    if (type == "midi"):
+        d = freq_to_midi
     #find frequency closest in the dictionary
     #return corresponding note
-    buckets = freq_to_note.keys()
+    buckets = d.keys()
     bestBucket = buckets[0]
     minDist = abs(bestBucket-freq)
     for bucket in buckets:
         if (abs(bucket-freq) < minDist):
             bestBucket = bucket
             minDist = abs(bestBucket-freq)
-    return freq_to_note.get(bestBucket)
-
-
-
+    return d.get(bestBucket)
 
