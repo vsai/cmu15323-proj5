@@ -1,0 +1,94 @@
+###################################################
+# 15-323 Spring 14
+# Rishabh Alaap Singh (rasingh)
+#
+# helpers.srp
+#
+# Some useful helper functions for Project 3
+###################################################
+
+load "strparse"
+
+# Concatenates an array of strings into 1.
+# REQUIRES: An array of strings
+# ENSURES : One concatenated String
+def cat(argArray)
+  var argLen = len(argArray)
+  var ans = ""
+  for i = 0 to argLen
+    ans = strcat(ans, argArray[i])
+  return ans
+
+# Parses an OSC address and returns an array of it's information
+def parseOSCaddress(input)
+  sp = String_parse(input)
+  var result = []
+  
+  while sp.remaining_len() != 0
+    field = sp.get_alnum()
+    if field == ""
+      # not an alphanumeric so it is '/'. Skip.
+      sp.skip("/")
+    else
+      result.append(field)
+  return result
+
+# Parses an alphanumeric value and returns the numeric aspect of it.
+# REQUIRES : an alphanumeric string of alphabets and then numbers
+# ENSURES  : number is returned
+def parseNum(path)
+    display ">>>>>>parseNum", path
+    var sp = String_parse(path)
+    var al = sp.get_alpha()
+    var n = sp.get_integer()
+
+    if n == nil
+        # For some reason, get_integer() does not recognize single digit ints. 
+        # So in this case just parse it out.
+        var str_len = len(path)
+        n = int(path[str_len - 1])
+    display n
+    return n
+
+# Constructs a 1D Array of 0s
+def make1DArray(rows)
+    var res = array(rows)
+    for r = 0 to rows
+        res[r] = 0
+    return res
+
+# Constructs a 2D Array of 0s
+def make2DArray(rows, cols)
+    var res = array(rows)
+    for r = 0 to rows
+        res[r] = array(cols)
+        for c = 0 to cols
+            res[r][c] = 0
+    return res
+
+# Maps velocity reception as a float from 0 to 1 to an int from 0 to 127
+def mapVel(vel)
+    return int(127*vel)
+
+# Allows 'master gain' functionalty by capping velocity if it gets too high.
+def velCap(vel)
+    if vel >= 127
+        return 127
+    elif vel <= 0
+        return 0
+    else
+        return vel
+
+# Maps 0-1 to 50-150
+def mapTempo(tempo)
+    return 50+(int(100*tempo))
+
+# Maps 0-1 to ~50 - 50
+def mapGain(delta)
+    return (int(100*delta)-50)
+
+# Changes tempo input to waiting period in seconds. Since tempo is 
+# defined as number of quarter notes per minute, we multiply the inputted
+# tempo by 4 and divide 60 seconds by that.
+def tempoToPeriod(tempo)
+    return 60.0 / (tempo * 4)

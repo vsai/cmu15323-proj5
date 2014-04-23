@@ -1,0 +1,230 @@
+###################################################
+# 15-323 Spring 14
+# Rishabh Alaap Singh (rasingh)
+#
+# handlers.srp
+#
+# The OSC handlers for Project 3
+###################################################
+load "scheduler"
+
+
+################   HELPERS   ######################
+def setup_handlers(path)
+    var parse_result = parseOSCaddress(path)
+    var tab_no = int(parse_result[0])
+    display "SYSTEM: Entered", tab_no
+
+    if (tab_no == 1)
+        if TAB_1_INIT == 1
+            # Already initialized, so return
+            return
+        # Initialize buttons
+        setup_1_toggles()
+        setup_1_faders()
+        setup_1_push()
+        TAB_1_INIT = 1
+
+    elif (tab_no == 2)
+        if TAB_2_INIT == 1
+            return
+        setup_2_multitoggles()
+        setup_2_multifaders()
+        TAB_2_INIT = 1
+    elif (tab_no == 3)
+        if TAB_3_INIT == 1
+            return
+        setup_3_rotaries()
+        setup_3_toggles()
+        TAB_3_INIT = 1
+    elif (tab_no == 4) 
+        if TAB_4_INIT == 1
+            return
+        setup_4_xy()
+        setup_4_toggles()
+        TAB_4_INIT = 1
+    else
+        display "SYSTEM ERROR: Tab not found", tab_no
+
+
+#################   TAB 1   #######################
+
+#--Globals
+TOGGLES_1_ALL = 2
+TOGGLE_BOARD_1 = make1DArray(TOGGLES_1_ALL)
+
+MULTIFADER_BOARD_1_ALL = 2
+FADER_BOARD_1 = make1DArray(MULTIFADER_BOARD_1_ALL)
+
+PUSH_MAX_ROW = 4
+PUSH_MAX_COL = 3
+PUSH_BOARD =  make2DArray(PUSH_MAX_ROW, PUSH_MAX_COL)
+
+# Instrument Set for basic rock kit
+INSTRUMENT_SET = [42, 38, 47, 49, 51, 36]
+
+#--Handlers
+def toggle_1_handler(path, on)
+    display "toggle_1_handler reached!", path, on
+    var path_array = parseOSCaddress(path)
+    var toggle_no = parseNum(path_array[len(path_array) - 1])
+
+    if toggle_no == 1
+        togglePlay(MULTITOGGLE_BOARD, INSTRUMENT_SET)
+    
+    elif toggle_no == 2
+        display "toggle 2 pressed!!", toggle_no
+
+    else 
+        display "SYSTEM ERROR: INVALID TOGGLE SELECTED ON TAB 1", 
+        return 
+
+
+def fader_1_handler(path, fader_val)
+    var path_array = parseOSCaddress(path)
+    var fader_no = parseNum(path_array[len(path_array) - 1])
+
+    if fader_no == 1
+        var tempo = mapTempo(fader_val)
+        changeTempo(tempo)
+
+    elif fader_no == 2
+        print "fader2 pressed!"
+    else
+        display "SYSTEM ERROR: INVALID FADER NUMBER FOR TAB 1"
+
+
+
+def push_1_handler(path, on)
+    display "push_handler reached", path, on
+    var path_array = parseOSCaddress(path)
+    var push_no = int(parseNum(path_array[len(path_array) - 1]))
+
+    if on == 1
+        if push_no == 10
+            modInstuments(1,0)
+
+        elif push_no == 12
+            modInstuments(1,1)
+
+#--Setup
+def setup_1_toggles()
+    for i = 0 to TOGGLES_1_ALL
+        osc_server_method(cat(["/1/toggle",str(i+1)]), "f", nil, 'toggle_1_handler')
+    display "SYSTEM: Tab 1 Toggles have been initialized."
+
+def setup_1_faders()
+    for i = 0 to MULTIFADER_BOARD_1_ALL
+        osc_server_method(cat(["/1/fader",str(i+1)]), "f", nil, 'fader_1_handler')
+    display "SYSTEM: Tab 1 Faders have been initialized."
+
+def setup_1_push()
+    for i = 0 to (PUSH_MAX_COL * PUSH_MAX_ROW)+1
+        osc_server_method(cat(["/1/push",str(i)]), "f", nil, 'push_1_handler')
+    display "SYSTEM: Tab 1 Push Board has been initialized."
+
+
+
+#################   TAB 2   #######################
+
+#--Globals
+MULTITOGGLE_MAX_ROW = 6
+MULTITOGGLE_MAX_COL = 16
+MULTITOGGLE_BOARD = make2DArray(MULTITOGGLE_MAX_ROW, MULTITOGGLE_MAX_COL)
+
+MULTIFADER_MAX = 16
+MULTIFADER_BOARD = make1DArray(MULTIFADER_MAX)
+
+#--Handlers
+def multitoggle_2_handler(path, on)
+    var path_array = parseOSCaddress(path)
+    var path_array_len = len(path_array)
+
+    # Get r and c, move from 1-idx to 0-idx and map to origin on bottom-left as in GUI
+    var r = MULTITOGGLE_MAX_ROW - int(path_array[path_array_len - 2])
+    var c = int(path_array[path_array_len - 1]) - 1
+    MULTITOGGLE_BOARD[r][c] = on 
+
+    display "SYSTEM: MULTITOGGLE_BOARD updated"
+    print MULTITOGGLE_BOARD
+    return
+
+def multifader_2_handler(path, vel)
+    var path_array = parseOSCaddress(path)
+    var path_array_len = len(path_array)
+    var loc = int(path_array[path_array_len - 1]) - 1
+
+    MULTIFADER_BOARD[loc] = mapVel(vel)
+    display "SYSTEM: MULTIFADER_BOARD updated"
+    print MULTIFADER_BOARD
+    return
+
+
+#--Setup
+def setup_2_multitoggles()
+    for r = 0 to MULTITOGGLE_MAX_ROW
+        for c = 0 to MULTITOGGLE_MAX_COL
+            osc_server_method(cat(["/2/multitoggle/",str(r+1),"/",str(c+1)]), "f", nil, 'multitoggle_2_handler')
+    display "SYSTEM: Tab 2 Multitoggles have been initialized."
+
+
+def setup_2_multifaders()
+    for f = 0 to MULTIFADER_MAX  
+        osc_server_method(cat(["/2/multifader/",str(f+1)]), "f", nil, 'multifader_2_handler') 
+    display "SYSTEM: Tab 2 Multifaders have been initialized."
+
+#################   TAB 3   #######################
+
+#--Globals
+ROTARIES_3_ROWS = 2
+ROTARIES_3_COLS = 3
+ROTARY_BOARD = make2DArray(ROTARIES_3_ROWS, ROTARIES_3_COLS)
+
+TOGGLES_3_ALL = 5
+TOGGLE_BOARD_3 = make1DArray(TOGGLES_3_ALL)
+
+#--Handlers
+def rotary_3_handler(path, rotary_value)
+    var path_array = parseOSCaddress(path)
+    var rotary_no = parseNum(path_array[len(path_array) - 1])
+
+    if rotary_no == 2
+        modGain(mapGain(rotary_value))
+
+def toggle_3_handler(path, rest parameters)
+    display "entered toggle_3_handler", path, parameters
+
+#--Setup
+def setup_3_rotaries()
+    for i = 0 to (ROTARIES_3_ROWS * ROTARIES_3_COLS)
+        osc_server_method(cat(["/3/rotary",str(i+1)]), "f", nil, 'rotary_3_handler')
+    display "SYSTEM: Tab 3 Rotaries have been initialized."
+
+
+def setup_3_toggles()
+    for i = 0 to TOGGLES_3_ALL
+        osc_server_method(cat(["/3/toggle",str(i+1)]), "f", nil, 'toggle_3_handler')
+    display "SYSTEM: Tab 3 Toggles have been initialized."
+
+#################   TAB 4   #######################
+
+#--Globals
+XY_BOARD = []
+
+TOGGLES_4_ALL = 5
+TOGGLE_BOARD_4 = make1DArray(TOGGLES_4_ALL)
+
+#--Handlers
+def xy_4_handler(path, rest parameters)
+    display "xy board", path, parameters
+
+def toggle_4_handler(path, rest parameters)
+    display "hit toggle board 4", path, parameters
+
+#--Setup
+def setup_4_xy()
+    osc_server_method("/4/xy", "ff", nil, 'xy_4_handler')    
+
+def setup_4_toggles()
+    for i = 0 to TOGGLES_4_ALL
+        osc_server_method(cat(["/4/toggle",str(i+1)]), "f", nil, 'toggle_4_handler')

@@ -1,33 +1,28 @@
-def osc_handler(path, rest parameters)
-  display "osc_handler", path, parameters
+load "helpers"
+load "handlers"
 
-def startup()
-  display "ok..."
-  osc_server_init("7770", t)
-  #osc_server_init("7771", t)
-  display "..."
-  osc_server_method("/afloat", "f", nil, 'osc_handler')
-  display "here."
+PORT = "7770"
 
+TAB_1_INIT = 0
+TAB_2_INIT = 0
+TAB_3_INIT = 0
+TAB_4_INIT = 0
+
+def startup(port)
+    osc_server_init(port, t)
+
+    # Setup Handlers for all the tabs
+    for i = 0 to 4
+        osc_server_method(cat(["/",str(i+1)]), "", nil, 'setup_handlers') #i+1 since they are 1-indexed 
+
+    # Since upon opening the app is automatically on Tab #1, initialize it
+    setup_handlers("/1")
+    setup_scheduler()
+
+    display "Server is ready ", port 
+
+# Starts the entire system
 def run()
-  display "--"
-  startup()
-  while true
-    osc_server_poll()
-    time_sleep(0.1)
-
-
-def main()
-  zmq_init()
-  var socket = zmq_open_reply()
-  display "bind step", zmq_bind(socket, "tcp", "*", 5555)
-
-  while 1
-    var req = zmq_recv_block(socket)
-    print "Server:", req, "-> World"
-    zmq_send(socket, "World")
-
-  zmq_close(socket)
-  zmq_term()
+    startup(PORT)
 
 run()
