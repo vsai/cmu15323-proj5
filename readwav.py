@@ -25,14 +25,14 @@ print "sampwidth * audioframes = %d"%(wf.getsampwidth() * wf.getnframes())
 print "num seconds = %d"%(wf.getnframes() / wf.getframerate())
 
 nchannels = wf.getnchannels()
-#sig = np.frombuffer(data, dtype='<i2').reshape(-1, nchannels)
-sig = np.frombuffer(data, dtype='float').reshape(-1, nchannels)
+sig = np.frombuffer(data, dtype='<i2').reshape(-1, nchannels)
+#sig = np.frombuffer(data, dtype='float').reshape(-1, nchannels)
 print "original signal dimensions: numrows: %d, numcols: %d"%(len(sig), len(sig[0]))
 
-sig = sig.flatten()
+#sig = sig.flatten()
 print "type(sig): %s"%(type(sig))
 print "len(sig): %s"%(len(sig))
-print sig[0:100]
+#print sig[0:100]
 
 #normalized = pcm2float(sig, np.float32)
 #print "type(normalized): %s"%(type(normalized))
@@ -40,8 +40,8 @@ print sig[0:100]
 
 fourier = np.fft.fft(sig)
 
-for i in range(10):
-    print fourier[i]
+#for i in range(10):
+#    print fourier[i]
 
 
 
@@ -49,11 +49,17 @@ n = sig.size
 timestep = 1.0/44100
 freq = np.fft.fftfreq(n, d=timestep)
 
-print "PLOTTING"
 
-print fourier[0:100]
-print freq[0:100]
+#print "PLOTTING"
 
+#print fourier[0:100]
+print "len(freq) = %d"%(len(freq))
+print "Printing frequency buckets"
+print freq[0:1000]
+
+
+print np.amax(fourier)
+print np.amax(freq)
 import matplotlib.pyplot as plt
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -68,6 +74,5 @@ fig.show()
 
 plt.show()
 
-#wf.close()
 
 
