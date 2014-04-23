@@ -1,6 +1,7 @@
 import OSC
 import time, random
 
+#REQUIRES ip_addr as string, port as number
 def osc_setup(ip_addr, port):
     send_address = (ip_addr, port)
     c = OSC.OSCClient()
