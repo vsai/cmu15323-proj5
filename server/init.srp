@@ -1,0 +1,18 @@
+def osc_handler(path, rest parameters)
+  display "osc_handler", path, parameters
+
+def startup()
+  display "ok..."
+  osc_server_init("7770", t)
+  display "..."
+  osc_server_method("/afloat", "f", nil, 'osc_handler')
+  display "here."
+
+def run()
+  display "--"
+  startup()
+  while true
+    osc_server_poll()
+    time_sleep(0.1)
+
+run()

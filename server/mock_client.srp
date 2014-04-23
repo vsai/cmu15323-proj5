@@ -1,0 +1,19 @@
+def startup()
+  display "got into startup"
+  addr = osc_create_address("", "7770", t)
+
+def send_afloat()
+  display "sending a float.."
+  osc_send_start()
+  osc_add_float(3.14)
+  osc_send(addr, "/afloat")
+  display "..done."
+
+def run()
+  display "--"
+  startup()
+  while true
+    send_afloat()
+    time_sleep(3.0)
+
+run()
