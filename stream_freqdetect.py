@@ -7,14 +7,19 @@ import numpy as np
 import sys
 import time
 import struct
-import bucketing_test as bt
+import freq_bucketing as bt
+#import OSC
+from client import osc_client as oscc
 
-#chunk = 2048
+#settings for OSC
+IPADDR = '128.237.202.69'
+PORT = 7770
+conn = oscc.osc_setup(IPADDR, PORT)
+
+# settings for pyaudio - open stream
 WIDTH = 2
 CHANNELS = 1
 RATE = 44100
-
-# open stream
 p = pyaudio.PyAudio()
 
 def getMainFreq(indata, frame_count):
@@ -41,13 +46,15 @@ def callback(in_data, frame_count, time_info, status):
     freq = getMainFreq(indata, frame_count)
     note = bt.getMusic(freq, "note")
     print note
+    midiNote = bt.getMusic(freq, "midi")
+    oscc.osc_send_midi(conn, midiNote)
     return (in_data, pyaudio.paContinue)
 
 stream = p.open(format=p.get_format_from_width(WIDTH),
                 channels=CHANNELS,
                 rate=RATE,
                 input=True,
-                output=True,
+                output=False,
                 frames_per_buffer=4096,
                 stream_callback=callback)
 
