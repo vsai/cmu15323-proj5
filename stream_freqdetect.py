@@ -12,10 +12,20 @@ import freq_bucketing as bt
 from client import osc_client as oscc
 
 #settings for OSC
-IPADDR = '128.237.172.70'
+#IPADDR = raw_input("Enter IP Address:")
+IPADDR = "128.237.172.70"
 PORT = 7770
 conn = oscc.osc_setup(IPADDR, PORT)
 CHANNEL_NAME = raw_input("Enter your midi channel name (1 or 2):")
+
+# Rishabh code
+#CONF_SIZE = 3 #magic!
+CONF_SIZE = int(raw_input("Enter your confidence size:"))
+CONFIDENCE_ARR = [""] * CONF_SIZE
+CONF_IDX = 0
+# /Rishabh code
+
+
 
 # settings for pyaudio - open stream
 WIDTH = 2
@@ -46,9 +56,21 @@ def callback(in_data, frame_count, time_info, status):
     indata = np.array(wave.struct.unpack('{n}h'.format(n=frame_count), in_data))*window
     freq = getMainFreq(indata, frame_count)
     note = bt.getMusic(freq, "note")
-    print note
+    print "Note is ", note
     midiNote = bt.getMusic(freq, "midi")
-    oscc.osc_send_midi(conn, CHANNEL_NAME, midiNote)
+
+    # Rishabh code
+    global CONF_IDX
+    CONFIDENCE_ARR[CONF_IDX % CONF_SIZE] = midiNote
+    if (eltsEqual(CONFIDENCE_ARR)):
+        oscc.osc_send_midi(conn, CHANNEL_NAME, midiNote)
+        print "sent message!!"
+
+    CONF_IDX = CONF_IDX + 1
+    # /Rishabh code
+
+
+    #oscc.osc_send_midi(conn, CHANNEL_NAME, midiNote)
     return (in_data, pyaudio.paContinue)
 
 stream = p.open(format=p.get_format_from_width(WIDTH),
@@ -58,6 +80,27 @@ stream = p.open(format=p.get_format_from_width(WIDTH),
                 output=False,
                 frames_per_buffer=4096,
                 stream_callback=callback)
+
+
+# Rishabh code
+
+def eltsEqual(array):
+    length = len(array)
+    if length <= 1:
+        print "only one elt in array!!"
+        return True
+    first = array[0]
+    for i in range(1,length):
+        if array[i] != first:
+            print "elts do not match!", array
+            return False
+
+    print "all elts match!"
+    return True
+
+# /Rishabh code
+
+
 
 #start the stream
 stream.start_stream()

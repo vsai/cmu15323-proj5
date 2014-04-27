@@ -16,11 +16,13 @@ PLAY = 0
 wait_period = 0.5 # Default starting
 
 
+
 NOTE_ARRAY = [60,61,62,63,64,65]
 
 # 0 ==> piano
 # 56 ==> trumpet
 INSTR_SET = [73, 36]
+LAST_MIDI_NOTE = [0,0]
 
 def activity(play, p)
     display "activity", play, the_sched.time, time_get(), p
@@ -72,17 +74,19 @@ def setup_channel(channel_in)
 def quick_play(midi_note, channel_in)
     now = int(time_get() * 1000)
 
-    note_on = chr(0x90 + channel_in) + chr(midi_note) + chr(100)
-    display "---"
-    midi_write(midi_out, now, note_on)
+    # change the note only if the last one is not the same note
+    if midi_note != LAST_MIDI_NOTE[channel_in]
+        # Turn off the last note
+        note_off = chr(0x90 + channel_in) + chr(LAST_MIDI_NOTE[channel_in]) + chr(0)
+        midi_write(midi_out, now, note_off)
+        LAST_MIDI_NOTE[channel_in] = midi_note
 
-    note_off = chr(0x90 + channel_in) + chr(midi_note) + chr(0)
-    midi_write(midi_out, now + 500, note_off)
+        note_on = chr(0x90 + channel_in) + chr(midi_note) + chr(100)
+        midi_write(midi_out, now, note_on)
 
+    
+    
 
-#    midi_out.note_on(0x90, midi_note, 100)
-
-###
 
 
 # Changes the waiting period of the drums
