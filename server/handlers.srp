@@ -94,10 +94,11 @@ def toggle_1_handler(path, on)
 
     if toggle_no == 1
         display "toggle 1 pressed!!", toggle_no
-        togglePlay()
+        togglePlay(0)
     
     elif toggle_no == 2
         display "toggle 2 pressed!!", toggle_no
+        togglePlay(1)
 
     else 
         display "SYSTEM ERROR: INVALID TOGGLE SELECTED ON TAB 1", 

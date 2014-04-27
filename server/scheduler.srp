@@ -12,7 +12,10 @@ debug_stack_print = t
 require "sched"
 require "midi-io"
 
-PLAY = 0
+# Channel Plays
+PLAY0 = 0
+PLAY1 = 0
+
 wait_period = 0.5 # Default starting
 
 
@@ -74,6 +77,17 @@ def setup_channel(channel_in)
 def quick_play(midi_note, channel_in)
     now = int(time_get() * 1000)
 
+    if channel_in == 0
+        if PLAY0 == 0
+            display "PLAY0 is offff!"
+            return
+
+    if channel_in == 1
+        if PLAY1 == 0
+            display "PLAY1 is offff!"
+            return
+
+
     # change the note only if the last one is not the same note
     if midi_note != LAST_MIDI_NOTE[channel_in]
         # Turn off the last note
@@ -96,14 +110,30 @@ def changeTempo(tempo)
     vtsched.finish_use()
     display "SYSTEM: Tempo Changed to ", tempo
 
-def togglePlay()
-    if PLAY == 0
-        PLAY = 1
-        print "===============PLAYING==============="
-        start_playing(wait_period)
-    else
-        PLAY = 0
-        print "===============STOPPED==============="
+def togglePlay(channel)
+    if channel == 0
+        if PLAY0 == 0
+            PLAY0 = 1
+            print "===============PLAYING0==============="
+        else
+            PLAY0 = 0
+
+            #turn off the note
+            note_off = chr(0x90 + channel) + chr(LAST_MIDI_NOTE[channel]) + chr(0)
+            midi_write(midi_out, now, note_off)
+
+            print "===============STOPPED0==============="
+    if channel == 1
+        if PLAY1 == 0
+            PLAY1 = 1
+            print "===============PLAYING1==============="
+        else
+            PLAY1 = 0
+
+            # turn off the note
+            note_off = chr(0x90 + channel) + chr(LAST_MIDI_NOTE[channel]) + chr(0)
+            midi_write(midi_out, now, note_off)
+            print "===============STOPPED1==============="
 
 
 def modGain(delta)
