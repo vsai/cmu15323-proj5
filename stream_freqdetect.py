@@ -12,9 +12,10 @@ import freq_bucketing as bt
 from client import osc_client as oscc
 
 #settings for OSC
-IPADDR = '128.237.202.69'
+IPADDR = '128.237.172.70'
 PORT = 7770
 conn = oscc.osc_setup(IPADDR, PORT)
+CHANNEL_NAME = raw_input("Enter your midi channel name (1 or 2):")
 
 # settings for pyaudio - open stream
 WIDTH = 2
@@ -47,7 +48,7 @@ def callback(in_data, frame_count, time_info, status):
     note = bt.getMusic(freq, "note")
     print note
     midiNote = bt.getMusic(freq, "midi")
-    oscc.osc_send_midi(conn, midiNote)
+    oscc.osc_send_midi(conn, CHANNEL_NAME, midiNote)
     return (in_data, pyaudio.paContinue)
 
 stream = p.open(format=p.get_format_from_width(WIDTH),

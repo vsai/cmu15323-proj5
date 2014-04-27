@@ -47,6 +47,40 @@ def setup_handlers(path)
         display "SYSTEM ERROR: Tab not found", tab_no
 
 
+#################   MIDI   #######################
+
+MIDI_RESPONSES_ALL = 2
+
+
+
+
+def midi_handler(path, midi_note)
+    display "midi1_handler received", midi_note, path
+    var path_array = parseOSCaddress(path)
+    var toggle_no = parseNum(path_array[len(path_array) - 1])
+    display "=====>", toggle_no
+
+    if toggle_no == 1
+        display "playing midi1 !"
+        quick_play(int(midi_note), 0)
+    else
+        display "playing midi 2 !"
+        quick_play(int(midi_note), 1)
+
+
+#def midi2_handler(path, midi_note)
+ #   display "midi2_handler received", midi_note, path
+    #quick_play(midi_note, 2)
+
+def setup_midi()
+    for i = 0 to MIDI_RESPONSES_ALL
+        osc_server_method(cat(["/midi", str(i+1)]), "s", nil, 'midi_handler')
+
+        # Setup the midi channels
+        setup_channel(i)
+    
+    
+
 #################   TAB 1   #######################
 
 #--Globals

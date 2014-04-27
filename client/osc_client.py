@@ -8,9 +8,10 @@ def osc_setup(ip_addr, port=7770):
     c.connect( send_address ) # set the address for all following messages
     return c
 
-def osc_send_midi(c, midi_note):
+def osc_send_midi(c, channel_name, midi_note):
     msg = OSC.OSCMessage()
-    msg.setAddress("/midi") # set OSC address
+    channel = "/midi" + channel_name
+    msg.setAddress(channel) # set OSC address
     msg.append(midi_note) # int
     c.send(msg) # send it!
 

@@ -18,6 +18,7 @@ def startup(port)
     # Since upon opening the app is automatically on Tab #1, initialize it
     setup_handlers("/1")
     setup_scheduler()
+    setup_midi()
 
     display "Server is ready ", port 
 
