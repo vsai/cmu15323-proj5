@@ -91,3 +91,4 @@ def mapGain(delta)
 # tempo by 4 and divide 60 seconds by that.
 def tempoToPeriod(tempo)
     return 60.0 / (tempo * 4)
+

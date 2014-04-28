@@ -28,7 +28,6 @@ def setup_channel(channel_in)
     instruction = chr(0xC0 + channel_in) + chr(INSTR_SET[channel_in]) 
     
     now = int(time_get() * 1000)
-    display "-", midi_out, now, instruction
     midi_write(midi_out, now, instruction)
     display channel_in, "set !!"
 
@@ -97,5 +96,5 @@ def setup_scheduler()
     rtsched.time_offset = time_get()
     vtsched.set_period(wait_period) 
     wxs_timer_start(2, 'timer_callback')
-    
+
     display "SYSTEM: Scheduler has been set up"
