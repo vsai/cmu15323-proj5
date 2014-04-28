@@ -10,85 +10,41 @@
 require "debug"
 debug_stack_print = t
 require "sched"
-require "midi-io"
 
 # Channel Plays
 PLAY0 = 0
 PLAY1 = 0
 
-wait_period = 0.5 # Default starting
-
-
-
-NOTE_ARRAY = [60,61,62,63,64,65]
-
-# 0 ==> piano
-# 56 ==> trumpet
-INSTR_SET = [73, 36]
+wait_period = 0.5 # Default wait period
+ 
+# 21 ==> organ
+# 13 ==> xylophone
+INSTR_SET = [21, 13]
 LAST_MIDI_NOTE = [0,0]
-
-def activity(play, p)
-    display "activity", play, the_sched.time, time_get(), p
-        
-    var buf_len = len(NOTE_ARRAY)
-    var i = p % buf_len
-
-
-    play_sounds(i, 0)
-
-    if play != PLAY
-        return
-
-    display "--"
-    p = p + 1
-    play_sounds(i, 1)
-    
-
-    the_sched.cause(wait_period, nil, 'activity', play, p)
-
-
-# Physically plays the sounds using midi-io
-def play_sounds(i, on)
-    display "play_sounds", on
-
-    if on == 1
-#        midi_out.note_on(0x90, NOTE_ARRAY[i], 100)
-        display "on!!!"
-    else
-        # end the previous note
-        if i == 0
-            i = len(NOTE_ARRAY) - 1
-        else
-            i = i-1
-#        midi_out.note_on(0x90, NOTE_ARRAY[i], 0)
 
 
 ### MIDI
-
 def setup_channel(channel_in)
     instruction = chr(0xC0 + channel_in) + chr(INSTR_SET[channel_in]) 
     
     now = int(time_get() * 1000)
     display "-", midi_out, now, instruction
     midi_write(midi_out, now, instruction)
-   # midi_out.note_on(instruction, INSTR_SET[channel_in], 0)
     display channel_in, "set !!"
 
-def quick_play(midi_note, channel_in)
+def play(midi_note, channel_in)
     now = int(time_get() * 1000)
 
+    # Don't do anything if the channels are off
     if channel_in == 0
         if PLAY0 == 0
-            display "PLAY0 is offff!"
             return
 
     if channel_in == 1
         if PLAY1 == 0
-            display "PLAY1 is offff!"
             return
 
-
-    # change the note only if the last one is not the same note
+    # Change the note only if the last one is not the same note
     if midi_note != LAST_MIDI_NOTE[channel_in]
         # Turn off the last note
         note_off = chr(0x90 + channel_in) + chr(LAST_MIDI_NOTE[channel_in]) + chr(0)
@@ -98,23 +54,12 @@ def quick_play(midi_note, channel_in)
         note_on = chr(0x90 + channel_in) + chr(midi_note) + chr(100)
         midi_write(midi_out, now, note_on)
 
-    
-    
-
-
-
-# Changes the waiting period of the drums
-def changeTempo(tempo)
-    vtsched.start_use()
-    vtsched.set_period(tempoToPeriod(tempo))
-    vtsched.finish_use()
-    display "SYSTEM: Tempo Changed to ", tempo
-
+# Toggles the play button for the particular channel
 def togglePlay(channel)
     if channel == 0
         if PLAY0 == 0
             PLAY0 = 1
-            print "===============PLAYING0==============="
+            print "===============PLAYING-0==============="
         else
             PLAY0 = 0
 
@@ -122,35 +67,27 @@ def togglePlay(channel)
             note_off = chr(0x90 + channel) + chr(LAST_MIDI_NOTE[channel]) + chr(0)
             midi_write(midi_out, now, note_off)
 
-            print "===============STOPPED0==============="
+            print "===============STOPPED-0==============="
     if channel == 1
         if PLAY1 == 0
             PLAY1 = 1
-            print "===============PLAYING1==============="
+            print "===============PLAYING-1==============="
         else
             PLAY1 = 0
 
             # turn off the note
             note_off = chr(0x90 + channel) + chr(LAST_MIDI_NOTE[channel]) + chr(0)
             midi_write(midi_out, now, note_off)
-            print "===============STOPPED1==============="
+            print "===============STOPPED-1==============="
 
-
-def modGain(delta)
-    GAIN = delta
 
 def timer_callback()
     rtsched.poll(time_get())
     osc_server_poll()
 
-def start_playing(wait_period)
-    vtsched.start_use()
-    vtsched.cause(wait_period,nil,'activity', PLAY, 0)
-    the_sched.finish_use()
-
+# Sets up the scheduler and initiates MIDI usage
 def setup_scheduler()
     sched_init()
-#    midi_out.start(0)
 
     midi_out = midi_create() // create an unopened PortMidi stream
     midi_dev = midi_out_default() // find default device number

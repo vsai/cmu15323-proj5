@@ -8,8 +8,14 @@
 ###################################################
 load "scheduler"
 
+# Note, this is a generic midi mapper for the basic 
+# TouchOSC interface. Only a subset of the mappings are 
+# attached to the scheduler
+
 
 ################   HELPERS   ######################
+
+# Global Setup
 def setup_handlers(path)
     var parse_result = parseOSCaddress(path)
     var tab_no = int(parse_result[0])
@@ -51,15 +57,13 @@ def setup_handlers(path)
 
 MIDI_RESPONSES_ALL = 2
 
-
-
-
 def midi_handler(path, midi_note)
     display "midi_handler received", midi_note, path
     var path_array = parseOSCaddress(path)
     var toggle_no = parseNum(path_array[len(path_array) - 1])
-    display "=====>", toggle_no
-    quick_play(int(midi_note), toggle_no - 1) # -1 for correct indexing
+
+    # Just play the note - (toggle_no indexing from 1-order to 0-order)
+    play(int(midi_note), toggle_no - 1) 
 
 def setup_midi()
     for i = 0 to MIDI_RESPONSES_ALL
@@ -92,13 +96,15 @@ def toggle_1_handler(path, on)
     var path_array = parseOSCaddress(path)
     var toggle_no = parseNum(path_array[len(path_array) - 1])
 
-    if toggle_no == 1
-        display "toggle 1 pressed!!", toggle_no
-        togglePlay(0)
-    
-    elif toggle_no == 2
-        display "toggle 2 pressed!!", toggle_no
-        togglePlay(1)
+    togglePlay(toggle_no - 1)
+
+#    if toggle_no == 1
+#        display "toggle 1 pressed!!", toggle_no
+#        togglePlay(0)
+#    
+#    elif toggle_no == 2
+#        display "toggle 2 pressed!!", toggle_no
+#        togglePlay(1)
 
     else 
         display "SYSTEM ERROR: INVALID TOGGLE SELECTED ON TAB 1", 
@@ -121,16 +127,7 @@ def fader_1_handler(path, fader_val)
 
 def push_1_handler(path, on)
     display "entered push_handler", path, on
-    var path_array = parseOSCaddress(path)
-    var push_no = int(parseNum(path_array[len(path_array) - 1]))
-
-    if on == 1
-        if push_no == 10
-            modInstuments(1,0)
-
-        elif push_no == 12
-            modInstuments(1,1)
-
+    
 #--Setup
 def setup_1_toggles()
     for i = 0 to TOGGLES_1_ALL

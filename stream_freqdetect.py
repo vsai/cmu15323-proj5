@@ -13,13 +13,12 @@ from client import osc_client as oscc
 
 #settings for OSC
 #IPADDR = raw_input("Enter IP Address:")
-IPADDR = "128.237.172.70"
+IPADDR = "128.237.191.102"
 PORT = 7770
 conn = oscc.osc_setup(IPADDR, PORT)
 CHANNEL_NAME = raw_input("Enter your midi channel name (1 or 2):")
 
 # Rishabh code
-#CONF_SIZE = 3 #magic!
 CONF_SIZE = int(raw_input("Enter your confidence size:"))
 CONFIDENCE_ARR = [""] * CONF_SIZE
 CONF_IDX = 0
